@@ -8,19 +8,20 @@
 * one SPI channel. In here the HC165N_L is for the lower bits
 * and HC165N_H is for the higher bits
 * 
-* Connections 
+* Connections for two shift register ICs:
 * HC165N_H 9 -- 10 HC165N_L 
 * HC165N_L 9 -- L432KC D12       Data out to SPI MISO
 * L432KC D13 -- 2  HC165N_H -- 2  HC165N_L  SPI CLK
 * L432KC  D5 -- 15 HC165N_H -- 15 HC165N_L  CLK_INH = SPI CS
 * L432KC  D6 -- 1  HC165N_H -- 1  HC165N_L  LD
+*
+* Encoder connected with pull up resistors to 165N A..H as in datasheet
+* https://www.bourns.com/pdfs/ace.pdf
 * 
-* Timo Karppinen 11.9.2020
+* Timo Karppinen 5.5.2021
 ****************************************************************/
 
 #include "mbed.h"
-
-
 #define REPEAT_RATE  1000ms
 
 // SPI class
@@ -50,7 +51,7 @@ int main(){
    hc165INH.write(1);  // CLK Inhibit high
    
    while(1){
-    // reading the 16 bit
+    // reading the 8 bits
     hc165LD.write(0);  // Loads parallel inputs to a register
     ThisThread::sleep_for(1ms);
     hc165LD.write(1);
@@ -64,7 +65,7 @@ int main(){
     
     hc165INH.write(1);   // CS high
    
-    //sw32 = sw16;
+    //sw32 = sw8;
     sw32 = sw8;
     printf(" 32 bit value without leading zeros %d\n", sw32);
     
@@ -77,6 +78,7 @@ int main(){
 }
 
 int GrayToDecimal(int gray){
+    // It is not the normal Gray code! 
     int pos;
     switch(gray){
         case 127: pos = 0;break;
